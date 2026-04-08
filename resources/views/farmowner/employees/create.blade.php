@@ -59,13 +59,13 @@
                     <select name="department" id="department-select" required class="w-full px-3 py-2 border border-gray-600 rounded-lg bg-white text-black focus:ring-2 focus:ring-green-500">
                         <option value="">Select</option>
                         @foreach(['farm_operations', 'logistics', 'hr', 'finance', 'sales', 'admin'] as $dept)
-                        <option value="{{ $dept }}" {{ old('department') === $dept ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $dept)) }}</option>
+                        <option value="{{ $dept }}" {{ old('department', 'logistics') === $dept ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $dept)) }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1">Position *</label>
-                    <input type="text" name="position" value="{{ old('position') }}" required
+                    <input type="text" name="position" value="{{ old('position', 'Driver') }}" required
                         class="w-full px-3 py-2 border border-gray-600 rounded-lg bg-white text-black placeholder-gray-500 focus:ring-2 focus:ring-green-500"
                         placeholder="e.g., Farm Worker">
                 </div>
@@ -138,7 +138,7 @@
                 @foreach($availableRoles as $role)
                     <label class="flex items-center space-x-3 p-3 border border-gray-600 rounded-lg hover:bg-gray-700 cursor-pointer">
                         <input type="checkbox" name="roles[]" value="{{ $role->name }}"
-                            {{ collect(old('roles', []))->contains($role->name) ? 'checked' : '' }}
+                            {{ collect(old('roles', ['driver']))->contains($role->name) ? 'checked' : '' }}
                             class="w-4 h-4 rounded role-checkbox"
                             data-role="{{ $role->name }}">
                         <div>

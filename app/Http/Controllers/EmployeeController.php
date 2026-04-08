@@ -174,27 +174,41 @@ class EmployeeController extends Controller
                 unset($employeeData['performance_rating']);
             }
 
+            $roles = $validated['roles'] ?? [];
+            if (isset($validated['roles'])) unset($employeeData['roles']);
+            if (isset($employeeData['driver_notes'])) unset($employeeData['driver_notes']);
+            if (isset($employeeData['vehicle_type'])) unset($employeeData['vehicle_type']);
+            if (isset($employeeData['vehicle_plate'])) unset($employeeData['vehicle_plate']);
+            if (isset($employeeData['vehicle_model'])) unset($employeeData['vehicle_model']);
+            if (isset($employeeData['license_number'])) unset($employeeData['license_number']);
+            if (isset($employeeData['license_expiry'])) unset($employeeData['license_expiry']);
+            if (isset($employeeData['delivery_fee'])) unset($employeeData['delivery_fee']);
+
             $employeeData['farm_owner_id'] = $farmOwner->id;
             $employeeData['user_id'] = $employeeUser->id;
             $employeeData['employee_id'] = $this->generateEmployeeId($farmOwner->id);
 
-            $employee = Employee::create($employeeData);
-
             // Assign roles if provided
             $roles = $validated['roles'] ?? [];
             
-            // If department is 'driver', automatically add driver role
-            if ($validated['department'] === 'driver' && !in_array('driver', $roles)) {
-                $roles[] = 'driver';
+            // If department is 'logistics' and driver info is filled or role driver selected
+            if ($validated['department'] === 'logistics' && (in_array('driver', $roles) || !empty($validated['vehicle_type']))) {
+                if (!in_array('driver', $roles)) {
+                    $roles[] = 'driver';
+                }
             }
+
+            $employee = clone (new Employee)->fill($employeeData);
+            $employee->save();
             
             foreach ($roles as $roleName) {
+                // Ensure we skip assigning if not present in the request array, but allow driver if injected above
                 $employee->assignRole($roleName);
             }
 
             // If driver role is assigned, create a driver profile
             if ($employee->hasRole('driver') && !$employee->driver) {
-                $driverUser = $employee->user ?? $employeeUser;
+                $driverUser = clone $employeeUser;
                 
                 $driver = Driver::create([
                     'farm_owner_id' => $farmOwner->id,
